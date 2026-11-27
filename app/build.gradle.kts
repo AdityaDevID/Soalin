@@ -15,7 +15,7 @@ android {
         // Di GitHub Actions, versionCode diisi otomatis dari nomor run (-PversionCode=N)
         val code = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
         versionCode = code
-        versionName = "1.1.$code"
+        versionName = "1.2.$code"
     }
 
     signingConfigs {

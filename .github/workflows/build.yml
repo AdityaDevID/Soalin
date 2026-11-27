@@ -27,19 +27,21 @@ jobs:
         run: gradle assembleRelease -PversionCode=${{ github.run_number }} --no-daemon
 
       - name: Ganti nama APK
-        run: mv app/build/outputs/apk/release/app-release.apk Soalin-v1.1.${{ github.run_number }}.apk
+        run: mv app/build/outputs/apk/release/app-release.apk Soalin-v1.2.${{ github.run_number }}.apk
 
       # APK dikirim ke halaman Releases (bukan Actions artifact)
       - name: Buat GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.1.${{ github.run_number }}
+          tag_name: v1.2.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: Soalin v1.1.${{ github.run_number }}
-          files: Soalin-v1.1.${{ github.run_number }}.apk
+          name: Soalin v1.2.${{ github.run_number }}
+          files: Soalin-v1.2.${{ github.run_number }}.apk
           body: |
-            ## Yang baru di v1.1
-            - Efek suara saat menekan tombol Jawab: suara benar dan salah (file di res/raw).
-            - Menambahkan LICENSE (MIT, AdityaDevID).
+            ## Yang baru di v1.2
+            - Kalau permintaan penyematan layar ditolak, sesi otomatis berhenti dan aplikasi ditutup.
+            - Keluar dari sesi tidak menghapus hasil jawaban; jawaban tersimpan setiap tombol Jawab ditekan.
+            - Tombol paket soal menampilkan: "Terakhir kali dibuka pada dd/mm/yyyy, jam:menit. Benar X, salah Y".
+            - Efek suara benar/salah dan LICENSE MIT (AdityaDevID) dari v1.1.
           generate_release_notes: true
           make_latest: true

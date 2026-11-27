@@ -1,6 +1,7 @@
 package com.soalin.app.ui
 
 import androidx.activity.compose.BackHandler
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -61,6 +62,8 @@ private enum class OptState { Idle, Selected, Correct, Wrong, Dim }
 fun QuizScreen(
     title: String,
     session: List<SessionQuestion>,
+    onBegin: () -> Unit,
+    onProgress: (correct: Int, wrong: Int) -> Unit,
     onFinish: (List<Int>) -> Unit,
     onExit: () -> Unit
 ) {
@@ -90,11 +93,28 @@ fun QuizScreen(
         onDispose { Guard.quizActive = false }
     }
 
-    // Mulai service penjaga dan minta penyematan layar
+    // Mulai service penjaga dan minta penyematan layar.
+    // Kalau penyematan ditolak, sesi dihentikan dan aplikasi ditutup otomatis.
     LaunchedEffect(Unit) {
         Sfx.load(ctx)
         GuardService.start(ctx)
-        activity?.let { Guard.pin(it) }
+        val act = activity
+        if (act != null && !Guard.isPinned(act)) {
+            Guard.pin(act)
+            if (!Guard.awaitPinned(act)) {
+                Guard.quizActive = false
+                Guard.everPinned = false
+                GuardService.stop(ctx)
+                Toast.makeText(
+                    ctx.applicationContext,
+                    "Sesi dihentikan: penyematan layar harus diizinkan (Pengaturan > Keamanan > Penyematan aplikasi).",
+                    Toast.LENGTH_LONG
+                ).show()
+                act.finishAndRemoveTask()
+                return@LaunchedEffect
+            }
+        }
+        onBegin() // catat waktu dibuka (log di tombol soal)
     }
 
     val q = session[index]
@@ -162,7 +182,11 @@ fun QuizScreen(
             onClick = {
                 if (!locked) {
                     locked = true // kunci jawaban setelah tombol "Jawab" ditekan
-                    Sfx.play(chosen == q.correctIndex) // suara benar / salah
+                    val ok = chosen == q.correctIndex
+                    Sfx.play(ok) // suara benar / salah
+                    // Simpan hasil sampai soal ini; tetap ada walau sesi ditinggalkan
+                    val correctNow = answers.indices.count { answers[it] == session[it].correctIndex } + if (ok) 1 else 0
+                    onProgress(correctNow, answers.size + 1 - correctNow)
                 } else {
                     answers.add(chosen)
                     if (index == total - 1) {
@@ -199,7 +223,7 @@ fun QuizScreen(
             onDismissRequest = { confirmExit = false },
             containerColor = C.Surface,
             title = { Text("Keluar dari sesi?", color = C.Text) },
-            text = { Text("Progres sesi ini tidak disimpan.", color = C.Dim) },
+            text = { Text("Jawaban yang sudah kamu kerjakan tetap tersimpan di riwayat soal.", color = C.Dim) },
             confirmButton = { TextButton(onClick = { leave(onExit) }) { Text("Keluar", color = C.Bad) } },
             dismissButton = { TextButton(onClick = { confirmExit = false }) { Text("Lanjut belajar", color = C.Primary) } }
         )

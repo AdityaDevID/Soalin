@@ -58,6 +58,10 @@ import com.soalin.app.data.QuizParseException
 import com.soalin.app.data.QuizParser
 import com.soalin.app.data.QuizSet
 import com.soalin.app.data.Repository
+import com.soalin.app.data.SessionLog
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import kotlinx.coroutines.launch
 
 @Composable
@@ -113,6 +117,7 @@ fun HomeScreen(
                         SetCard(
                             set = set,
                             best = repo.bestScore(set.id),
+                            log = repo.lastLog(set.id),
                             onClick = { onStart(set) },
                             onDelete = { toDelete = set }
                         )
@@ -161,7 +166,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun SetCard(set: QuizSet, best: Int, onClick: () -> Unit, onDelete: () -> Unit) {
+private fun SetCard(set: QuizSet, best: Int, log: SessionLog?, onClick: () -> Unit, onDelete: () -> Unit) {
     Row(
         Modifier
             .fillMaxWidth()
@@ -183,6 +188,15 @@ private fun SetCard(set: QuizSet, best: Int, onClick: () -> Unit, onDelete: () -
                 if (best >= 0) append("  •  Skor terbaik $best%")
             }
             Text(info, color = C.Accent, fontSize = 13.sp, fontWeight = FontWeight.Medium)
+            log?.let {
+                Spacer(Modifier.height(4.dp))
+                val waktu = SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault()).format(Date(it.time))
+                Text(
+                    "Terakhir kali dibuka pada $waktu. Benar ${it.correct}, salah ${it.wrong}",
+                    color = C.Dim,
+                    fontSize = 12.sp
+                )
+            }
         }
         IconButton(onClick = onDelete) {
             Icon(Icons.Default.Delete, contentDescription = "Hapus", tint = C.Dim)

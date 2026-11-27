@@ -11,6 +11,7 @@ import android.media.AudioTrack
 import android.os.Handler
 import android.os.Looper
 import android.os.SystemClock
+import kotlinx.coroutines.delay
 import kotlin.math.PI
 import kotlin.math.exp
 import kotlin.math.min
@@ -46,6 +47,29 @@ object Guard {
             activity.stopLockTask()
         } catch (_: Exception) {
         }
+    }
+
+    /**
+     * Menunggu hasil dialog penyematan layar setelah pin().
+     * true = tersemat, false = ditolak (atau dialog tidak muncul karena fitur mati di Pengaturan).
+     */
+    suspend fun awaitPinned(activity: Activity): Boolean {
+        // 1) Dialog sistem harus muncul (jendela aplikasi kehilangan fokus) atau langsung tersemat
+        var waited = 0
+        while (activity.hasWindowFocus() && !isPinned(activity)) {
+            if (waited >= 2500) return false
+            delay(100)
+            waited += 100
+        }
+        // 2) Dialog tampil: tunggu pengguna memilih
+        while (!activity.hasWindowFocus() && !isPinned(activity)) delay(100)
+        // 3) Fokus kembali: beri jeda singkat sampai status sematan ter-update
+        var grace = 0
+        while (!isPinned(activity) && grace < 1000) {
+            delay(100)
+            grace += 100
+        }
+        return isPinned(activity)
     }
 
     fun isPinned(context: Context): Boolean {

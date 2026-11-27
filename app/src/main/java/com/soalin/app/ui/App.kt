@@ -15,7 +15,11 @@ import com.soalin.app.data.newSession
 
 sealed interface Screen {
     data object Home : Screen
-    data class Quiz(val set: QuizSet, val session: List<SessionQuestion>) : Screen
+    data class Quiz(
+        val set: QuizSet,
+        val session: List<SessionQuestion>,
+        val startedAt: Long = System.currentTimeMillis()
+    ) : Screen
     data class Result(
         val set: QuizSet,
         val session: List<SessionQuestion>,
@@ -49,6 +53,8 @@ fun SoalinApp() {
         is Screen.Quiz -> QuizScreen(
             title = s.set.title,
             session = s.session,
+            onBegin = { repo.saveLog(s.set.id, s.startedAt, 0, 0) },
+            onProgress = { correct, wrong -> repo.saveLog(s.set.id, s.startedAt, correct, wrong) },
             onFinish = { answers ->
                 val correct = answers.indices.count { answers[it] == s.session[it].correctIndex }
                 repo.saveBestScore(s.set.id, correct * 100 / s.session.size)

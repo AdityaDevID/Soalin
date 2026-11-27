@@ -58,7 +58,7 @@ object Downloader {
                 connectTimeout = 15_000
                 readTimeout = 20_000
                 instanceFollowRedirects = false
-                setRequestProperty("User-Agent", "Mozilla/5.0 (Android) Soalin/1.1")
+                setRequestProperty("User-Agent", "Mozilla/5.0 (Android) Soalin/1.2")
                 setRequestProperty("Accept", "application/json,text/plain,*/*")
             }
             try {
