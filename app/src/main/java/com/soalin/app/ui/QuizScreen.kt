@@ -92,6 +92,7 @@ fun QuizScreen(
 
     // Mulai service penjaga dan minta penyematan layar
     LaunchedEffect(Unit) {
+        Sfx.load(ctx)
         GuardService.start(ctx)
         activity?.let { Guard.pin(it) }
     }

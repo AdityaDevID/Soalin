@@ -39,7 +39,7 @@ jobs:
           files: Soalin-v1.1.${{ github.run_number }}.apk
           body: |
             ## Yang baru di v1.1
-            - Efek suara saat menekan tombol Jawab: "ting-ting" kalau benar, "tuut-tut" kalau salah.
+            - Efek suara saat menekan tombol Jawab: suara benar dan salah (file di res/raw).
             - Menambahkan LICENSE (MIT, AdityaDevID).
           generate_release_notes: true
           make_latest: true

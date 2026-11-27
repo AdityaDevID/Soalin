@@ -6,7 +6,7 @@ Aplikasi belajar offline berbasis Kotlin (Jetpack Compose), tampilan gelap.
 - Soal pilihan ganda; **urutan soal dan urutan pilihan jawaban diacak setiap sesi**
 - Soal tersimpan di HP, jadi bisa belajar tanpa internet
 - **Mode terkunci untuk anak:** saat sesi soal dimulai, aplikasi meminta penyematan layar (screen pinning). Setelah selesai atau keluar, penyematan dilepas dan **bel alarm berbunyi 5 detik** (lewat volume alarm) agar orang tua tahu. Bel juga berbunyi kalau penyematan dilepas paksa di tengah sesi atau aplikasi ditinggalkan.
-- **Efek suara jawaban:** saat tombol Jawab ditekan, terdengar suara "ting-ting" kalau benar dan "tuut-tut" kalau salah (volume media, dibuat lewat kode)
+- **Efek suara jawaban:** saat tombol Jawab ditekan, terdengar suara "ting-ting" kalau benar dan "tuut-tut" kalau salah (volume media). File suaranya ada di `app/src/main/res/raw/` (`sfx_correct.mp3`, `sfx_wrong.mp3`), tinggal ganti kalau mau suara lain
 - Skor terbaik per paket, pembahasan, dan daftar soal yang salah di akhir sesi
 
 Cara memuat soal: lihat **[CARA_MEMUAT_SOAL.md](CARA_MEMUAT_SOAL.md)**.
@@ -26,7 +26,7 @@ Spesifikasi: minSdk 26, targetSdk 34, Kotlin 2.0.20, AGP 8.5.2, Gradle 8.7, JDK 
 
 ```
 app/src/main/java/com/soalin/app/
-  MainActivity.kt, Guard.kt (penyematan + bel), Sfx.kt (suara benar/salah)
+  MainActivity.kt, Guard.kt (penyematan + bel), Sfx.kt (pemutar suara benar/salah)
   data/   Models, QuizParser (baca JSON), Downloader (link -> unduhan), Repository
   ui/     Theme, App (navigasi), HomeScreen, QuizScreen, ResultScreen
 docs/     logo.png, contoh_soal.json
