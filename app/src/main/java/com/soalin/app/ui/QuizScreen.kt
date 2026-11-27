@@ -44,7 +44,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import com.soalin.app.BellPlayer
+import com.soalin.app.Guard
 import com.soalin.app.data.SessionQuestion
+import com.soalin.app.findActivity
+import kotlinx.coroutines.delay
 
 private enum class OptState { Idle, Selected, Correct, Wrong, Dim }
 
@@ -62,6 +69,38 @@ fun QuizScreen(
     var confirmExit by remember { mutableStateOf(false) }
 
     BackHandler { confirmExit = true }
+
+    val ctx = LocalContext.current
+    val activity = remember { ctx.findActivity() }
+
+    // Selesai / keluar: lepas penyematan lalu bunyikan bel 5 detik
+    fun leave(next: () -> Unit) {
+        Guard.quizActive = false
+        activity?.let { Guard.unpin(it) }
+        BellPlayer.ring(ctx)
+        next()
+    }
+
+    DisposableEffect(Unit) {
+        Guard.quizActive = true
+        onDispose { Guard.quizActive = false }
+    }
+
+    // Minta penyematan layar; jika penyematan dilepas paksa di tengah sesi, bel berbunyi
+    LaunchedEffect(Unit) {
+        activity?.let { Guard.pin(it) }
+        var wasPinned = false
+        while (true) {
+            delay(1000)
+            val pinned = Guard.isPinned(ctx)
+            if (pinned) {
+                wasPinned = true
+            } else if (wasPinned) {
+                wasPinned = false
+                BellPlayer.ring(ctx)
+            }
+        }
+    }
 
     val q = session[index]
     val answered = locked
@@ -131,7 +170,7 @@ fun QuizScreen(
                 } else {
                     answers.add(chosen)
                     if (index == total - 1) {
-                        onFinish(answers.toList())
+                        leave { onFinish(answers.toList()) }
                     } else {
                         index++
                         chosen = -1
@@ -165,7 +204,7 @@ fun QuizScreen(
             containerColor = C.Surface,
             title = { Text("Keluar dari sesi?", color = C.Text) },
             text = { Text("Progres sesi ini tidak disimpan.", color = C.Dim) },
-            confirmButton = { TextButton(onClick = onExit) { Text("Keluar", color = C.Bad) } },
+            confirmButton = { TextButton(onClick = { leave(onExit) }) { Text("Keluar", color = C.Bad) } },
             dismissButton = { TextButton(onClick = { confirmExit = false }) { Text("Lanjut belajar", color = C.Primary) } }
         )
     }

@@ -5,6 +5,7 @@ Aplikasi belajar offline berbasis Kotlin (Jetpack Compose), tampilan gelap.
 - Muat soal lewat link (Google Drive, GitHub, Gist, Dropbox, link langsung) atau file dari HP
 - Soal pilihan ganda; **urutan soal dan urutan pilihan jawaban diacak setiap sesi**
 - Soal tersimpan di HP, jadi bisa belajar tanpa internet
+- **Mode terkunci untuk anak:** saat sesi soal dimulai, aplikasi meminta penyematan layar (screen pinning). Setelah selesai atau keluar, penyematan dilepas dan **bel alarm berbunyi 5 detik** (lewat volume alarm) agar orang tua tahu. Bel juga berbunyi kalau penyematan dilepas paksa di tengah sesi atau aplikasi ditinggalkan.
 - Skor terbaik per paket, pembahasan, dan daftar soal yang salah di akhir sesi
 
 Cara memuat soal: lihat **[CARA_MEMUAT_SOAL.md](CARA_MEMUAT_SOAL.md)**.
@@ -27,3 +28,7 @@ app/src/main/java/com/soalin/app/
   ui/     Theme, App (navigasi), HomeScreen, QuizScreen, ResultScreen
 docs/     logo.png, contoh_soal.json
 ```
+
+## Penyematan layar (untuk orang tua)
+
+Agar penyematan berfungsi, aktifkan dulu di HP: **Pengaturan > Keamanan (atau Keamanan & privasi) > Penyematan aplikasi / Sematkan layar (App pinning)**. Aktifkan juga **Minta PIN sebelum melepas sematan** supaya anak tidak bisa melepasnya sendiri. Saat sesi dimulai, tekan **Mulai/Sematkan** pada dialog sistem yang muncul.
