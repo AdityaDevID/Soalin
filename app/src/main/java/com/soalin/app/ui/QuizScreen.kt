@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.soalin.app.data.SessionQuestion
 
-private enum class OptState { Idle, Correct, Wrong, Dim }
+private enum class OptState { Idle, Selected, Correct, Wrong, Dim }
 
 @Composable
 fun QuizScreen(
@@ -57,13 +57,14 @@ fun QuizScreen(
 ) {
     var index by remember { mutableIntStateOf(0) }
     var chosen by remember { mutableIntStateOf(-1) }
+    var locked by remember { mutableStateOf(false) }
     val answers = remember { mutableStateListOf<Int>() }
     var confirmExit by remember { mutableStateOf(false) }
 
     BackHandler { confirmExit = true }
 
     val q = session[index]
-    val answered = chosen >= 0
+    val answered = locked
     val total = session.size
     val progress = (index + (if (answered) 1 else 0)) / total.toFloat()
 
@@ -96,7 +97,7 @@ fun QuizScreen(
 
             q.options.forEachIndexed { i, text ->
                 val st = when {
-                    !answered -> OptState.Idle
+                    !answered -> if (i == chosen) OptState.Selected else OptState.Idle
                     i == q.correctIndex -> OptState.Correct
                     i == chosen -> OptState.Wrong
                     else -> OptState.Dim
@@ -125,15 +126,20 @@ fun QuizScreen(
 
         Button(
             onClick = {
-                answers.add(chosen)
-                if (index == total - 1) {
-                    onFinish(answers.toList())
+                if (!locked) {
+                    locked = true // kunci jawaban setelah tombol "Jawab" ditekan
                 } else {
-                    index++
-                    chosen = -1
+                    answers.add(chosen)
+                    if (index == total - 1) {
+                        onFinish(answers.toList())
+                    } else {
+                        index++
+                        chosen = -1
+                        locked = false
+                    }
                 }
             },
-            enabled = answered,
+            enabled = chosen >= 0,
             modifier = Modifier.fillMaxWidth().height(54.dp),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
@@ -143,7 +149,13 @@ fun QuizScreen(
                 disabledContentColor = C.Dim
             )
         ) {
-            Text(if (index == total - 1) "Selesai" else "Lanjut", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Text(
+                when {
+                    !locked -> "Jawab"
+                    index == total - 1 -> "Selesai"
+                    else -> "Lanjut"
+                },
+                fontSize = 16.sp, fontWeight = FontWeight.Bold)
         }
     }
 
@@ -163,6 +175,7 @@ fun QuizScreen(
 private fun OptionItem(label: Char, text: String, state: OptState, enabled: Boolean, onClick: () -> Unit) {
     val (bg, borderColor, badge) = when (state) {
         OptState.Idle -> Triple(C.Surface, C.SurfaceHi, C.Primary)
+        OptState.Selected -> Triple(C.Primary.copy(alpha = 0.15f), C.Primary, C.Primary)
         OptState.Correct -> Triple(C.Good.copy(alpha = 0.15f), C.Good, C.Good)
         OptState.Wrong -> Triple(C.Bad.copy(alpha = 0.15f), C.Bad, C.Bad)
         OptState.Dim -> Triple(C.Surface, C.SurfaceHi, C.Dim)
