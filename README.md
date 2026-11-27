@@ -13,7 +13,8 @@ Cara memuat soal: lihat **[CARA_MEMUAT_SOAL.md](CARA_MEMUAT_SOAL.md)**.
 
 - Android Studio: buka folder ini, tekan Run.
 - Command line: `./gradlew assembleDebug` (APK ada di `app/build/outputs/apk/debug/`).
-- GitHub Actions: workflow ada di `.github/workflows/build.yml`.
+- GitHub Actions (otomatis): setiap push ke `main`/`master`, APK dibuild lalu dikirim ke halaman **Releases** (`Soalin-v1.0.N.apk`), tanpa Actions artifact. Bisa juga dijalankan manual lewat tab Actions > Run workflow.
+- APK ditandatangani dengan `soalin-release.jks`, jadi versi baru bisa langsung menimpa versi lama tanpa uninstall.
 
 Spesifikasi: minSdk 26, targetSdk 34, Kotlin 2.0.20, AGP 8.5.2, Gradle 8.7, JDK 17.
 

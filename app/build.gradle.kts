@@ -12,15 +12,26 @@ android {
         applicationId = "com.soalin.app"
         minSdk = 26
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        // Di GitHub Actions, versionCode diisi otomatis dari nomor run (-PversionCode=N)
+        val code = (project.findProperty("versionCode") as String?)?.toIntOrNull() ?: 1
+        versionCode = code
+        versionName = "1.0.$code"
+    }
+
+    signingConfigs {
+        // Kunci tetap supaya APK versi baru bisa menimpa (update) versi lama tanpa uninstall
+        create("release") {
+            storeFile = rootProject.file("soalin-release.jks")
+            storePassword = "soalin123"
+            keyAlias = "soalin"
+            keyPassword = "soalin123"
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            // Ditandatangani dengan kunci debug supaya APK release langsung bisa di-install
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
