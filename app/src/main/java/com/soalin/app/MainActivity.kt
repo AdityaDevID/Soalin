@@ -18,9 +18,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        // Keluar dari aplikasi saat sesi soal berjalan dan layar tidak tersemat -> bel berbunyi
+        // Meninggalkan aplikasi saat sesi soal berjalan dan layar tidak tersemat:
+        // kalau sebelumnya pernah tersemat -> bel terus-menerus, kalau tidak -> bel 5 detik
         if (Guard.quizActive && !Guard.isPinned(this)) {
-            BellPlayer.ring(this)
+            if (Guard.everPinned) BellPlayer.ringForever(this) else BellPlayer.ring(this)
         }
     }
 }

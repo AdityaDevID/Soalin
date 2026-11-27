@@ -32,3 +32,10 @@ docs/     logo.png, contoh_soal.json
 ## Penyematan layar (untuk orang tua)
 
 Agar penyematan berfungsi, aktifkan dulu di HP: **Pengaturan > Keamanan (atau Keamanan & privasi) > Penyematan aplikasi / Sematkan layar (App pinning)**. Aktifkan juga **Minta PIN sebelum melepas sematan** supaya anak tidak bisa melepasnya sendiri. Saat sesi dimulai, tekan **Mulai/Sematkan** pada dialog sistem yang muncul.
+
+## Alarm terus-menerus (keluar paksa)
+
+- Selesai atau keluar lewat tombol aplikasi: penyematan dilepas, bel berbunyi **5 detik**.
+- Penyematan dilepas paksa di tengah sesi, atau aplikasi ditinggalkan setelah sempat tersemat: bel berbunyi **terus-menerus** dan volume alarm dijaga maksimal. Tidak ada tombol untuk menghentikannya; alarm berhenti saat HP dihidupkan ulang.
+- Alarm dijalankan oleh service latar depan (`GuardService`), jadi tetap bunyi walau aplikasi ditutup/ditinggalkan. Muncul notifikasi "Sesi belajar sedang berlangsung" selama sesi.
+- Batasan: mematikan HP tidak bisa dideteksi/dihalangi aplikasi, dan "Paksa berhenti" atau uninstall dari pengaturan Android juga menghentikan alarm.

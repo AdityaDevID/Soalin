@@ -49,6 +49,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import com.soalin.app.BellPlayer
 import com.soalin.app.Guard
+import com.soalin.app.GuardService
 import com.soalin.app.data.SessionQuestion
 import com.soalin.app.findActivity
 import kotlinx.coroutines.delay
@@ -73,9 +74,10 @@ fun QuizScreen(
     val ctx = LocalContext.current
     val activity = remember { ctx.findActivity() }
 
-    // Selesai / keluar: lepas penyematan lalu bunyikan bel 5 detik
+    // Selesai / keluar lewat tombol aplikasi: lepas penyematan lalu bel 5 detik
     fun leave(next: () -> Unit) {
         Guard.quizActive = false
+        GuardService.stop(ctx)
         activity?.let { Guard.unpin(it) }
         BellPlayer.ring(ctx)
         next()
@@ -83,23 +85,14 @@ fun QuizScreen(
 
     DisposableEffect(Unit) {
         Guard.quizActive = true
+        Guard.everPinned = false
         onDispose { Guard.quizActive = false }
     }
 
-    // Minta penyematan layar; jika penyematan dilepas paksa di tengah sesi, bel berbunyi
+    // Mulai service penjaga dan minta penyematan layar
     LaunchedEffect(Unit) {
+        GuardService.start(ctx)
         activity?.let { Guard.pin(it) }
-        var wasPinned = false
-        while (true) {
-            delay(1000)
-            val pinned = Guard.isPinned(ctx)
-            if (pinned) {
-                wasPinned = true
-            } else if (wasPinned) {
-                wasPinned = false
-                BellPlayer.ring(ctx)
-            }
-        }
     }
 
     val q = session[index]

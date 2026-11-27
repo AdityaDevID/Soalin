@@ -30,6 +30,10 @@ object Guard {
     @Volatile
     var quizActive = false
 
+    /** True jika layar pernah benar-benar tersemat selama sesi ini. */
+    @Volatile
+    var everPinned = false
+
     fun pin(activity: Activity) {
         try {
             activity.startLockTask()
@@ -50,15 +54,36 @@ object Guard {
     }
 }
 
-/** Bunyi bel alarm 5 detik (dibuat lewat kode, tanpa file suara), keras lewat jalur volume alarm. */
+/**
+ * Suara bel alarm (dibuat lewat kode, tanpa file suara) lewat jalur volume alarm.
+ * - ring(): 5 detik (selesai / keluar lewat tombol aplikasi)
+ * - ringForever(): terus-menerus sampai HP dihidupkan ulang (keluar paksa saat tersemat)
+ */
 object BellPlayer {
     private const val RATE = 22050
     private const val SECONDS = 5
     private var busyUntil = 0L
+    private var current: AudioTrack? = null
     private val handler = Handler(Looper.getMainLooper())
+
+    @Volatile
+    var forever = false
+        private set
+
+    fun maxAlarmVolume(context: Context) {
+        try {
+            val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+            val max = am.getStreamMaxVolume(AudioManager.STREAM_ALARM)
+            if (am.getStreamVolume(AudioManager.STREAM_ALARM) < max) {
+                am.setStreamVolume(AudioManager.STREAM_ALARM, max, 0)
+            }
+        } catch (_: Exception) {
+        }
+    }
 
     @Synchronized
     fun ring(context: Context) {
+        if (forever) return
         val now = SystemClock.elapsedRealtime()
         if (now < busyUntil) return // sedang berbunyi, jangan dobel
         busyUntil = now + (SECONDS * 1000L) + 500L
@@ -75,24 +100,8 @@ object BellPlayer {
 
         try {
             val samples = buildBell()
-            val track = AudioTrack.Builder()
-                .setAudioAttributes(
-                    AudioAttributes.Builder()
-                        .setUsage(AudioAttributes.USAGE_ALARM)
-                        .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                        .build()
-                )
-                .setAudioFormat(
-                    AudioFormat.Builder()
-                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                        .setSampleRate(RATE)
-                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                        .build()
-                )
-                .setBufferSizeInBytes(samples.size * 2)
-                .setTransferMode(AudioTrack.MODE_STATIC)
-                .build()
-            track.write(samples, 0, samples.size)
+            val track = createTrack(samples)
+            current = track
             track.play()
             handler.postDelayed({
                 try {
@@ -100,13 +109,59 @@ object BellPlayer {
                     track.release()
                 } catch (_: Exception) {
                 }
+                if (current === track) current = null
             }, SECONDS * 1000L + 300L)
         } catch (_: Exception) {
             busyUntil = 0L
         }
     }
 
-    /** Bel dipukul 2 kali per detik selama 5 detik. */
+    /** Bunyi terus-menerus. Tidak ada fungsi untuk menghentikannya: hanya restart HP. */
+    @Synchronized
+    fun ringForever(context: Context) {
+        if (forever) return
+        forever = true
+        handler.removeCallbacksAndMessages(null)
+        try {
+            current?.stop()
+            current?.release()
+        } catch (_: Exception) {
+        }
+        maxAlarmVolume(context)
+        try {
+            val samples = buildBell()
+            val track = createTrack(samples)
+            track.setLoopPoints(0, samples.size, -1)
+            current = track
+            track.play()
+        } catch (_: Exception) {
+            forever = false
+        }
+    }
+
+    private fun createTrack(samples: ShortArray): AudioTrack {
+        val track = AudioTrack.Builder()
+            .setAudioAttributes(
+                AudioAttributes.Builder()
+                    .setUsage(AudioAttributes.USAGE_ALARM)
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .build()
+            )
+            .setAudioFormat(
+                AudioFormat.Builder()
+                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                    .setSampleRate(RATE)
+                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                    .build()
+            )
+            .setBufferSizeInBytes(samples.size * 2)
+            .setTransferMode(AudioTrack.MODE_STATIC)
+            .build()
+        track.write(samples, 0, samples.size)
+        return track
+    }
+
+    /** Bel dipukul 2 kali per detik; panjang total 5 detik (bisa diulang tanpa jeda). */
     private fun buildBell(): ShortArray {
         val out = ShortArray(RATE * SECONDS)
         val f0 = 660.0
