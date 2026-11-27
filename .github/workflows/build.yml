@@ -27,15 +27,19 @@ jobs:
         run: gradle assembleRelease -PversionCode=${{ github.run_number }} --no-daemon
 
       - name: Ganti nama APK
-        run: mv app/build/outputs/apk/release/app-release.apk Soalin-v1.0.${{ github.run_number }}.apk
+        run: mv app/build/outputs/apk/release/app-release.apk Soalin-v1.1.${{ github.run_number }}.apk
 
       # APK dikirim ke halaman Releases (bukan Actions artifact)
       - name: Buat GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.${{ github.run_number }}
+          tag_name: v1.1.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
-          name: Soalin v1.0.${{ github.run_number }}
-          files: Soalin-v1.0.${{ github.run_number }}.apk
+          name: Soalin v1.1.${{ github.run_number }}
+          files: Soalin-v1.1.${{ github.run_number }}.apk
+          body: |
+            ## Yang baru di v1.1
+            - Efek suara saat menekan tombol Jawab: "ting-ting" kalau benar, "tuut-tut" kalau salah.
+            - Menambahkan LICENSE (MIT, AdityaDevID).
           generate_release_notes: true
           make_latest: true

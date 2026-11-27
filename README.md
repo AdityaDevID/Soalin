@@ -6,6 +6,7 @@ Aplikasi belajar offline berbasis Kotlin (Jetpack Compose), tampilan gelap.
 - Soal pilihan ganda; **urutan soal dan urutan pilihan jawaban diacak setiap sesi**
 - Soal tersimpan di HP, jadi bisa belajar tanpa internet
 - **Mode terkunci untuk anak:** saat sesi soal dimulai, aplikasi meminta penyematan layar (screen pinning). Setelah selesai atau keluar, penyematan dilepas dan **bel alarm berbunyi 5 detik** (lewat volume alarm) agar orang tua tahu. Bel juga berbunyi kalau penyematan dilepas paksa di tengah sesi atau aplikasi ditinggalkan.
+- **Efek suara jawaban:** saat tombol Jawab ditekan, terdengar suara "ting-ting" kalau benar dan "tuut-tut" kalau salah (volume media, dibuat lewat kode)
 - Skor terbaik per paket, pembahasan, dan daftar soal yang salah di akhir sesi
 
 Cara memuat soal: lihat **[CARA_MEMUAT_SOAL.md](CARA_MEMUAT_SOAL.md)**.
@@ -14,8 +15,10 @@ Cara memuat soal: lihat **[CARA_MEMUAT_SOAL.md](CARA_MEMUAT_SOAL.md)**.
 
 - Android Studio: buka folder ini, tekan Run.
 - Command line: `./gradlew assembleDebug` (APK ada di `app/build/outputs/apk/debug/`).
-- GitHub Actions (otomatis): setiap push ke `main`/`master`, APK dibuild lalu dikirim ke halaman **Releases** (`Soalin-v1.0.N.apk`), tanpa Actions artifact. Bisa juga dijalankan manual lewat tab Actions > Run workflow.
+- GitHub Actions (otomatis): setiap push ke `main`/`master`, APK dibuild lalu dikirim ke halaman **Releases** (`Soalin-v1.1.N.apk`), tanpa Actions artifact. Bisa juga dijalankan manual lewat tab Actions > Run workflow.
 - APK ditandatangani dengan `soalin-release.jks`, jadi versi baru bisa langsung menimpa versi lama tanpa uninstall.
+
+Lisensi: [MIT](LICENSE) © AdityaDevID
 
 Spesifikasi: minSdk 26, targetSdk 34, Kotlin 2.0.20, AGP 8.5.2, Gradle 8.7, JDK 17.
 
@@ -23,7 +26,7 @@ Spesifikasi: minSdk 26, targetSdk 34, Kotlin 2.0.20, AGP 8.5.2, Gradle 8.7, JDK 
 
 ```
 app/src/main/java/com/soalin/app/
-  MainActivity.kt
+  MainActivity.kt, Guard.kt (penyematan + bel), Sfx.kt (suara benar/salah)
   data/   Models, QuizParser (baca JSON), Downloader (link -> unduhan), Repository
   ui/     Theme, App (navigasi), HomeScreen, QuizScreen, ResultScreen
 docs/     logo.png, contoh_soal.json

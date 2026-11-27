@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import com.soalin.app.BellPlayer
 import com.soalin.app.Guard
 import com.soalin.app.GuardService
+import com.soalin.app.Sfx
 import com.soalin.app.data.SessionQuestion
 import com.soalin.app.findActivity
 import kotlinx.coroutines.delay
@@ -160,6 +161,7 @@ fun QuizScreen(
             onClick = {
                 if (!locked) {
                     locked = true // kunci jawaban setelah tombol "Jawab" ditekan
+                    Sfx.play(chosen == q.correctIndex) // suara benar / salah
                 } else {
                     answers.add(chosen)
                     if (index == total - 1) {
